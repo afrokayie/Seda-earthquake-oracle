@@ -9,24 +9,25 @@ import { clsx } from 'clsx';
 // TypeScript declaration for ethereum
 declare global {
   interface Window {
-    ethereum?: any;
+    ethereum?: ethers.Eip1193Provider;
   }
 }
 
 // Helper to filter out Chainlink probe errors
-function isChainlinkProbeError(err: any): boolean {
+function isChainlinkProbeError(err: unknown): boolean {
   if (err && typeof err === 'object') {
+    const errorObj = err as { code?: string; transaction?: { data?: string }; message?: string };
     if (
-      err.code === 'CALL_EXCEPTION' &&
-      err.transaction &&
-      err.transaction.data === '0x50d25bcd'
+      errorObj.code === 'CALL_EXCEPTION' &&
+      errorObj.transaction &&
+      errorObj.transaction.data === '0x50d25bcd'
     ) {
       return true;
     }
     if (
-      err.message &&
-      typeof err.message === 'string' &&
-      err.message.includes('0x50d25bcd')
+      errorObj.message &&
+      typeof errorObj.message === 'string' &&
+      errorObj.message.includes('0x50d25bcd')
     ) {
       return true;
     }
@@ -98,7 +99,9 @@ export default function EarthquakeDashboard() {
       const provider = new ethers.BrowserProvider(window.ethereum);
       const signer = await provider.getSigner();
       const contract = getContractInstance(provider);
-      const contractWithSigner = contract.connect(signer) as any;
+      const contractWithSigner = contract.connect(signer) as ethers.Contract & {
+        transmit: (requestFee: bigint, resultFee: bigint, batchFee: bigint, overrides?: { value: bigint }) => Promise<ethers.ContractTransactionResponse>;
+      };
 
       // Default fees (in wei) - you can adjust these
       const requestFee = ethers.parseEther('0.0001');
