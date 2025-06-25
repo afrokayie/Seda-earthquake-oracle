@@ -4,7 +4,7 @@ Fetch and report recent earthquake data (magnitude, location, time) from the USG
 
 ---
 
-## 🌎 Project Overview
+## Project Overview
 This project is a full-stack Oracle solution for the [SEDA Network](https://seda.xyz/):
 - **Backend/Oracle Program:** Fetches earthquake data from the USGS API, aggregates it, and posts it to SEDA.
 - **EVM Smart Contract:** Receives and stores earthquake data on-chain (Base Sepolia).
@@ -12,7 +12,7 @@ This project is a full-stack Oracle solution for the [SEDA Network](https://seda
 
 ---
 
-## 🚀 Features
+## Features
 - Fetches real-time earthquake data from [USGS API](https://earthquake.usgs.gov/fdsnws/event/1/)
 - Aggregates and reports median magnitude, location, and time
 - Oracle Program written in Rust, compiled to WASM for SEDA
@@ -22,7 +22,7 @@ This project is a full-stack Oracle solution for the [SEDA Network](https://seda
 
 ---
 
-## 🏗️ Architecture
+## Architecture
 ```mermaid
 graph TD;
   USGS_API["USGS Earthquake API"] -->|Fetch| OracleProgram["SEDA Oracle Program (Rust/WASM)"]
@@ -156,7 +156,7 @@ bun run post-dr
 
 ---
 
-## 🔗 Links
+## Links
 - [SEDA Docs: Building an Oracle Program](https://docs.seda.xyz/home/for-developers/building-an-oracle-program)
 - [SEDA SDK](https://github.com/sedaprotocol/seda-sdk)
 - [USGS Earthquake API](https://earthquake.usgs.gov/fdsnws/event/1/)
@@ -164,5 +164,5 @@ bun run post-dr
 
 ---
 
-## 📄 License
+## License
 MIT License. See [LICENSE](LICENSE).

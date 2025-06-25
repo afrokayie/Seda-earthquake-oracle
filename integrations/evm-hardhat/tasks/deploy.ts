@@ -17,7 +17,7 @@ interface DeploymentInfo {
 }
 
 /**
- * Task: Deploys the PriceFeed contract.
+ * Task: Deploys the EarthquakeFeed contract.
  * Optional parameters:
  * - coreAddress: The SEDA Core contract address
  * - oracleProgramId: The Oracle program ID
@@ -26,7 +26,7 @@ interface DeploymentInfo {
  * If parameters are not provided, they are fetched from configuration.
  */
 priceFeedScope
-  .task('deploy', 'Deploys the PriceFeed contract')
+  .task('deploy', 'Deploys the EarthquakeFeed contract')
   .addOptionalParam('coreAddress', 'The SEDA Core contract address')
   .addOptionalParam('oracleProgramId', 'The Oracle program ID')
   .addFlag('force', 'Force overwrite if deployment exists')
@@ -104,16 +104,16 @@ priceFeedScope
         }
       }
 
-      // Deploy the PriceFeed contract
-      console.log('\nDeploying PriceFeed contract...');
-      const PriceFeedFactory = await hre.ethers.getContractFactory('PriceFeed');
-      const priceFeed = await PriceFeedFactory.deploy(coreAddress, oracleProgramId);
+      // Deploy the EarthquakeFeed contract
+      console.log('\nDeploying EarthquakeFeed contract...');
+      const EarthquakeFeedFactory = await hre.ethers.getContractFactory('EarthquakeFeed');
+      const earthquakeFeed = await EarthquakeFeedFactory.deploy(coreAddress, oracleProgramId);
 
-      await priceFeed.waitForDeployment();
-      const priceFeedAddress = await priceFeed.getAddress();
+      await earthquakeFeed.waitForDeployment();
+      const earthquakeFeedAddress = await earthquakeFeed.getAddress();
 
-      console.log('\nPriceFeed deployed successfully:');
-      console.log(`- Contract Address: ${priceFeedAddress}`);
+      console.log('\nEarthquakeFeed deployed successfully:');
+      console.log(`- Contract Address: ${earthquakeFeedAddress}`);
       console.log(`- SEDA Core Address: ${coreAddress}`);
       console.log(`- Oracle Program ID: ${oracleProgramId}`);
 
@@ -122,7 +122,7 @@ priceFeedScope
 
       // Create the deployment info
       const deploymentInfo = {
-        contractAddress: priceFeedAddress,
+        contractAddress: earthquakeFeedAddress,
         coreAddress,
         oracleProgramId,
         timestamp,
@@ -148,7 +148,7 @@ priceFeedScope
         console.log('\nVerifying contract on block explorer...');
         try {
           await hre.run('verify:verify', {
-            address: priceFeedAddress,
+            address: earthquakeFeedAddress,
             constructorArguments: [coreAddress, oracleProgramId],
           });
           console.log('Contract verification successful');
@@ -159,7 +159,7 @@ priceFeedScope
         console.log('\nSkipping verification: Not available on local networks');
       }
 
-      return priceFeedAddress;
+      return earthquakeFeedAddress;
     } catch (error) {
       console.error('Deployment failed:', error);
       process.exit(1);

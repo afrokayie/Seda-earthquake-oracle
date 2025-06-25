@@ -2,29 +2,29 @@ import { priceFeedScope } from '.';
 import { getDeployedContract } from './utils';
 
 /**
- * Task: Fetches the latest answer from the PriceFeed contract.
- * Optional parameter: contract (PriceFeed contract address).
+ * Task: Fetches the latest answer from the EarthquakeFeed contract.
+ * Optional parameter: contract (EarthquakeFeed contract address).
  * If the contract address is not provided, fetches from previous deployments.
  */
 priceFeedScope
-  .task('latest', 'Calls the latestAnswer function on the PriceFeed contract')
-  .addOptionalParam('contract', 'The PriceFeed contract address')
+  .task('latest', 'Calls the latestAnswer function on the EarthquakeFeed contract')
+  .addOptionalParam('contract', 'The EarthquakeFeed contract address')
   .setAction(async ({ contract }, hre) => {
     try {
       // Fetch the address from previous deployments if not provided
-      let priceFeedAddress = contract;
-      if (!priceFeedAddress) {
+      let earthquakeFeedAddress = contract;
+      if (!earthquakeFeedAddress) {
         console.log('No contract address specified, fetching from previous deployments...');
-        priceFeedAddress = getDeployedContract(hre.network, 'PriceFeed');
-        console.log('Contract found:', priceFeedAddress);
+        earthquakeFeedAddress = getDeployedContract(hre.network, 'EarthquakeFeed');
+        console.log('Contract found:', earthquakeFeedAddress);
       }
 
-      // Get the PriceFeed contract instance
-      const priceFeed = await hre.ethers.getContractAt('PriceFeed', priceFeedAddress);
+      // Get the EarthquakeFeed contract instance
+      const earthquakeFeed = await hre.ethers.getContractAt('EarthquakeFeed', earthquakeFeedAddress);
 
       // Call the latestAnswer function on the contract
-      console.log(`\nCalling latestAnswer() on PriceFeed at ${priceFeedAddress}`);
-      const latestAnswer = await priceFeed.latestAnswer();
+      console.log(`\nCalling latestAnswer() on EarthquakeFeed at ${earthquakeFeedAddress}`);
+      const latestAnswer = await earthquakeFeed.latestAnswer();
       console.log('Latest Answer:', latestAnswer.toString());
       // biome-ignore lint/suspicious/noExplicitAny:
     } catch (error: any) {

@@ -34,8 +34,8 @@ export function getDeployedContract(network: Network, contractName: string): str
     throw new Error(`No deployments found for network ${networkKey}`);
   }
 
-  // For PriceFeed, use contractAddress
-  if (contractName === 'PriceFeed') {
+  // For EarthquakeFeed, use contractAddress
+  if (contractName === 'EarthquakeFeed') {
     return deployments[networkKey].contractAddress;
   }
 

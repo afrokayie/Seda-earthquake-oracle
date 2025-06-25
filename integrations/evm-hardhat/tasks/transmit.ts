@@ -5,9 +5,9 @@ import { getDeployedContract } from './utils';
 const DEFAULT_FEE = '0.0001';
 
 /**
- * Task: Calls the transmit function on the PriceFeed contract.
+ * Task: Calls the transmit function on the EarthquakeFeed contract.
  * Optional parameters:
- * - contract: PriceFeed contract address
+ * - contract: EarthquakeFeed contract address
  * - requestFee: Fee for data request (in ETH)
  * - resultFee: Fee for result processing (in ETH)
  * - batchFee: Fee for batch operations (in ETH)
@@ -15,19 +15,19 @@ const DEFAULT_FEE = '0.0001';
  * If parameters are not provided, default values are used.
  */
 priceFeedScope
-  .task('transmit', 'Calls the transmit function on the PriceFeed contract')
-  .addOptionalParam('contract', 'The PriceFeed contract address')
+  .task('transmit', 'Calls the transmit function on the EarthquakeFeed contract')
+  .addOptionalParam('contract', 'The EarthquakeFeed contract address')
   .addOptionalParam('requestFee', 'Fee for data request (in ETH)', DEFAULT_FEE)
   .addOptionalParam('resultFee', 'Fee for result processing (in ETH)', DEFAULT_FEE)
   .addOptionalParam('batchFee', 'Fee for batch operations (in ETH)', DEFAULT_FEE)
   .setAction(async ({ contract, requestFee, resultFee, batchFee }, hre) => {
     try {
       // Fetch the address from previous deployments if not provided
-      let priceFeedAddress = contract;
-      if (!priceFeedAddress) {
+      let earthquakeFeedAddress = contract;
+      if (!earthquakeFeedAddress) {
         console.log('No contract address specified, fetching from previous deployments...');
-        priceFeedAddress = getDeployedContract(hre.network, 'PriceFeed');
-        console.log('Contract found:', priceFeedAddress);
+        earthquakeFeedAddress = getDeployedContract(hre.network, 'EarthquakeFeed');
+        console.log('Contract found:', earthquakeFeedAddress);
       }
 
       // Parse the fee values
@@ -38,18 +38,18 @@ priceFeedScope
       // Calculate total value for the transaction
       const totalValue = parsedRequestFee + parsedResultFee + parsedBatchFee;
 
-      // Get the PriceFeed contract instance
-      const priceFeed = await hre.ethers.getContractAt('PriceFeed', priceFeedAddress);
+      // Get the EarthquakeFeed contract instance
+      const earthquakeFeed = await hre.ethers.getContractAt('EarthquakeFeed', earthquakeFeedAddress);
 
       // Call the transmit function
-      console.log(`\nCalling transmit() on PriceFeed at ${priceFeedAddress}...\n`);
+      console.log(`\nCalling transmit() on EarthquakeFeed at ${earthquakeFeedAddress}...\n`);
       console.log(`Fees (ETH):
 - Request Fee: ${requestFee}
 - Result Fee: ${resultFee}
 - Batch Fee: ${batchFee}
 - Total: ${hre.ethers.formatEther(totalValue)}\n`);
 
-      const tx = await priceFeed.transmit(parsedRequestFee, parsedResultFee, parsedBatchFee, { value: totalValue });
+      const tx = await earthquakeFeed.transmit(parsedRequestFee, parsedResultFee, parsedBatchFee, { value: totalValue });
 
       // Wait for the transaction
       await tx.wait();

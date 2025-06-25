@@ -10,11 +10,11 @@ import {ISedaCore} from "@seda-protocol/evm/contracts/interfaces/ISedaCore.sol";
 import {SedaDataTypes} from "@seda-protocol/evm/contracts/libraries/SedaDataTypes.sol";
 
 /**
- * @title PriceFeed
- * @notice An example showing how to create and interact with SEDA network requests.
- * @dev This contract demonstrates basic SEDA request creation and result fetching.
+ * @title EarthquakeFeed
+ * @notice An example showing how to create and interact with SEDA network requests for earthquake data.
+ * @dev This contract demonstrates basic SEDA request creation and result fetching for USGS earthquake data.
  */
-contract PriceFeed {
+contract EarthquakeFeed {
     /// @notice Instance of the SedaCore contract
     ISedaCore public immutable SEDA_CORE;
 
@@ -38,8 +38,8 @@ contract PriceFeed {
     }
 
     /**
-     * @notice Creates a new ETH-USDC price request on the SEDA network
-     * @dev Demonstrates how to structure and send a request to SEDA
+     * @notice Creates a new earthquake data request on the SEDA network
+     * @dev Demonstrates how to structure and send a request to SEDA for earthquake data
      * @param requestFee The fee for the request
      * @param resultFee The fee for the result
      * @param batchFee The fee for the batch
@@ -48,7 +48,7 @@ contract PriceFeed {
     function transmit(uint256 requestFee, uint256 resultFee, uint256 batchFee) external payable returns (bytes32) {
         SedaDataTypes.RequestInputs memory inputs = SedaDataTypes.RequestInputs(
             ORACLE_PROGRAM_ID, // execProgramId (Execution WASM binary ID)
-            bytes("eth-usdc"), // execInputs (Inputs for Execution WASM)
+            bytes("earthquake-data"), // execInputs (Inputs for Execution WASM)
             20000000000000, // execGasLimit
             ORACLE_PROGRAM_ID, // tallyProgramId (same as execProgramId in this example)
             hex"00", // tallyInputs
@@ -65,19 +65,19 @@ contract PriceFeed {
     }
 
     /**
-     * @notice Retrieves the result of the latest request
-     * @dev Shows how to fetch and interpret SEDA request results
-     * @return The price as uint128, or 0 if no consensus was reached
+     * @notice Retrieves the result of the latest earthquake data request
+     * @dev Shows how to fetch and interpret SEDA request results for earthquake data
+     * @return The earthquake data as bytes, or empty bytes if no consensus was reached
      */
-    function latestAnswer() public view returns (uint128) {
+    function latestAnswer() public view returns (bytes memory) {
         if (requestId == bytes32(0)) revert RequestNotTransmitted();
 
         SedaDataTypes.Result memory result = SEDA_CORE.getResult(requestId);
 
         if (result.consensus) {
-            return uint128(bytes16(result.result));
+            return result.result;
         }
 
-        return 0;
+        return "";
     }
 }
