@@ -16,7 +16,7 @@ export function ConnectWallet() {
               <>
                 <User className="h-4 w-4" />
                 <span className="hidden sm:inline">
-                  {ensName ?? `${address?.slice(0, 6)}...${address?.slice(-4)}`}
+                  {address ? `${address.slice(0, 6)}...${address.slice(-4)}` : ''}
                 </span>
                 <span className="sm:hidden">Connected</span>
               </>
