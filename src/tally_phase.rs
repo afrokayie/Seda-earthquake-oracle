@@ -1,7 +1,6 @@
 use crate::execution_phase::EarthquakeInfo;
 use anyhow::Result;
 use seda_sdk_rs::{elog, get_reveals, log, Process};
-use serde_json;
 
 /**
  * Executes the tally phase within the SEDA network.

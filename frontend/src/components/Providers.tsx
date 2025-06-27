@@ -25,7 +25,7 @@ const config = createConfig(
     appDescription: "Real-time earthquake data from the USGS via SEDA Network",
     appUrl: "https://your-app-url.com", // your app's url
     appIcon: "https://your-app-url.com/logo.png", // your app's icon, no bigger than 1024x1024px (max. 1MB)
-  }),
+  })
 );
 
 const queryClient = new QueryClient();

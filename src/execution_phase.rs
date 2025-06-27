@@ -1,7 +1,6 @@
 use anyhow::Result;
 use seda_sdk_rs::{elog, http_fetch, log, Process};
 use serde::{Deserialize, Serialize};
-use serde_json;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct EarthquakeInfo {
@@ -51,7 +50,7 @@ pub fn execution_phase() -> Result<()> {
     let geojson: GeoJsonResponse = serde_json::from_slice(&response.bytes)?;
     let feature = geojson
         .features
-        .get(0)
+        .first()
         .ok_or_else(|| anyhow::anyhow!("No earthquake data found"))?;
     let props = &feature.properties;
 

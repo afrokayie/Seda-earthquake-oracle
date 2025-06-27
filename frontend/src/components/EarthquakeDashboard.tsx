@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { ethers } from 'ethers';
 import { Activity, MapPin, Clock, Zap, AlertTriangle, CheckCircle } from 'lucide-react';
 import { getContractInstance, parseEarthquakeData, type EarthquakeData } from '@/lib/contract';
@@ -43,7 +43,7 @@ export default function EarthquakeDashboard() {
   const publicClient = usePublicClient();
   const { data: walletClient } = useWalletClient();
 
-  const fetchEarthquakeData = async () => {
+  const fetchEarthquakeData = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -81,7 +81,7 @@ export default function EarthquakeDashboard() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [publicClient]);
 
   const requestNewData = async () => {
     try {
