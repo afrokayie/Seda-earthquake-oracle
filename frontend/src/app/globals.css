@@ -1,8 +1,11 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #0A0A0F;
+  --foreground: #ffffff;
+  --seda-primary: #6100FF;
+  --seda-secondary: #7E2FFF;
+  --seda-dark: #0A0A0F;
 }
 
 @theme inline {
@@ -22,5 +25,32 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+}
+
+/* Custom scrollbar for SEDA theme */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #1a1a2e;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--seda-primary);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--seda-secondary);
+}
+
+/* ConnectKit theme overrides */
+[data-connectkit-theme] {
+  --ck-connectbutton-background: var(--seda-primary);
+  --ck-connectbutton-hover-background: var(--seda-secondary);
+  --ck-connectbutton-active-background: var(--seda-secondary);
+  --ck-connectbutton-border-radius: 8px;
+  --ck-connectbutton-font-weight: 500;
 }

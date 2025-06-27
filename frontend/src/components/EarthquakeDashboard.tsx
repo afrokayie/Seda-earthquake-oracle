@@ -5,13 +5,8 @@ import { ethers } from 'ethers';
 import { Activity, MapPin, Clock, Zap, AlertTriangle, CheckCircle } from 'lucide-react';
 import { getContractInstance, parseEarthquakeData, type EarthquakeData } from '@/lib/contract';
 import { clsx } from 'clsx';
-
-// TypeScript declaration for ethereum
-declare global {
-  interface Window {
-    ethereum?: ethers.Eip1193Provider;
-  }
-}
+import { useAccount, usePublicClient, useWalletClient } from 'wagmi';
+import { ConnectWallet } from './ConnectWallet';
 
 // Helper to filter out Chainlink probe errors
 function isChainlinkProbeError(err: unknown): boolean {
@@ -44,20 +39,21 @@ export default function EarthquakeDashboard() {
   const [formattedTime, setFormattedTime] = useState<string | null>(null);
   const [formattedLastUpdated, setFormattedLastUpdated] = useState<string | null>(null);
 
+  const { isConnected } = useAccount();
+  const publicClient = usePublicClient();
+  const { data: walletClient } = useWalletClient();
+
   const fetchEarthquakeData = async () => {
     try {
       setLoading(true);
       setError(null);
 
-      // Check if MetaMask is available
-      if (typeof window.ethereum === 'undefined') {
-        throw new Error('MetaMask is not installed. Please install MetaMask to use this app.');
+      if (!publicClient) {
+        throw new Error('Wallet not connected. Please connect your wallet first.');
       }
 
-      // Request account access
-      await window.ethereum.request({ method: 'eth_requestAccounts' });
-      
-      const provider = new ethers.BrowserProvider(window.ethereum);
+      // Convert wagmi public client to ethers provider
+      const provider = new ethers.BrowserProvider(publicClient.transport);
       const contract = getContractInstance(provider);
       
       const result = await contract.latestAnswer();
@@ -92,11 +88,12 @@ export default function EarthquakeDashboard() {
       setRequesting(true);
       setError(null);
 
-      if (typeof window.ethereum === 'undefined') {
-        throw new Error('MetaMask is not installed');
+      if (!walletClient) {
+        throw new Error('Wallet not connected. Please connect your wallet first.');
       }
 
-      const provider = new ethers.BrowserProvider(window.ethereum);
+      // Convert wagmi wallet client to ethers provider and signer
+      const provider = new ethers.BrowserProvider(walletClient.transport);
       const signer = await provider.getSigner();
       const contract = getContractInstance(provider);
       const contractWithSigner = contract.connect(signer) as ethers.Contract & {
@@ -133,8 +130,14 @@ export default function EarthquakeDashboard() {
   };
 
   useEffect(() => {
-    fetchEarthquakeData();
-  }, []);
+    if (isConnected) {
+      fetchEarthquakeData();
+    } else {
+      setLoading(false);
+      setEarthquakeData(null);
+      setError('Please connect your wallet to view earthquake data.');
+    }
+  }, [isConnected]);
 
   useEffect(() => {
     if (earthquakeData?.time) {
@@ -170,24 +173,28 @@ export default function EarthquakeDashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
+    <div className="min-h-screen bg-gradient-to-br from-[#0A0A0F] via-[#0A0A0F] to-[#1a1a2e] p-4">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">
+          <div className="flex items-center justify-between mb-4">
+            <div></div> {/* Spacer */}
+            <ConnectWallet />
+          </div>
+          <h1 className="text-4xl font-bold text-white mb-2">
             🌍 SEDA Earthquake Oracle
           </h1>
-          <p className="text-gray-600">
+          <p className="text-gray-300">
             Real-time earthquake data from the USGS via SEDA Network
           </p>
         </div>
 
         {/* Error Display */}
         {error && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+          <div className="bg-red-900/20 border border-red-500/30 rounded-lg p-4 mb-6">
             <div className="flex items-center">
               <AlertTriangle className="h-5 w-5 text-red-400 mr-2" />
-              <span className="text-red-800">{error}</span>
+              <span className="text-red-200">{error}</span>
             </div>
           </div>
         )}
@@ -195,13 +202,13 @@ export default function EarthquakeDashboard() {
         {/* Main Content */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Current Earthquake Data */}
-          <div className="bg-white rounded-xl shadow-lg p-6">
+          <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl shadow-lg p-6">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-semibold text-gray-900">Latest Earthquake</h2>
+              <h2 className="text-xl font-semibold text-white">Latest Earthquake</h2>
               <button
                 onClick={fetchEarthquakeData}
-                disabled={loading}
-                className="flex items-center px-3 py-1 text-sm bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200 disabled:opacity-50"
+                disabled={loading || !isConnected}
+                className="flex items-center px-3 py-1 text-sm bg-[#6100FF]/20 text-[#6100FF] rounded-md hover:bg-[#7E2FFF]/20 disabled:opacity-50 border border-[#6100FF]/30"
               >
                 <Activity className="h-4 w-4 mr-1" />
                 Refresh
@@ -210,20 +217,20 @@ export default function EarthquakeDashboard() {
 
             {loading ? (
               <div className="flex items-center justify-center h-32">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#6100FF]"></div>
               </div>
             ) : earthquakeData ? (
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center">
                     <Zap className="h-5 w-5 text-yellow-500 mr-2" />
-                    <span className="text-sm text-gray-600">Magnitude</span>
+                    <span className="text-sm text-gray-300">Magnitude</span>
                   </div>
                   <div className="text-right">
                     <span className={clsx('text-2xl font-bold', getMagnitudeColor(earthquakeData.magnitude))}>
                       {earthquakeData.magnitude}
                     </span>
-                    <span className="text-sm text-gray-500 ml-2">
+                    <span className="text-sm text-gray-400 ml-2">
                       ({getMagnitudeSeverity(earthquakeData.magnitude)})
                     </span>
                   </div>
@@ -232,9 +239,9 @@ export default function EarthquakeDashboard() {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center">
                     <MapPin className="h-5 w-5 text-red-500 mr-2" />
-                    <span className="text-sm text-gray-600">Location</span>
+                    <span className="text-sm text-gray-300">Location</span>
                   </div>
-                  <span className="text-sm font-medium text-gray-900 text-right">
+                  <span className="text-sm font-medium text-white text-right">
                     {earthquakeData.location}
                   </span>
                 </div>
@@ -242,16 +249,16 @@ export default function EarthquakeDashboard() {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center">
                     <Clock className="h-5 w-5 text-green-500 mr-2" />
-                    <span className="text-sm text-gray-600">Time</span>
+                    <span className="text-sm text-gray-300">Time</span>
                   </div>
-                  <span className="text-sm text-gray-900 text-right">
+                  <span className="text-sm text-white text-right">
                     {formattedTime}
                   </span>
                 </div>
 
                 {lastUpdated && (
-                  <div className="pt-4 border-t border-gray-200">
-                    <div className="flex items-center text-xs text-gray-500">
+                  <div className="pt-4 border-t border-white/10">
+                    <div className="flex items-center text-xs text-gray-400">
                       <CheckCircle className="h-3 w-3 mr-1" />
                       Last updated: {formattedLastUpdated}
                     </div>
@@ -259,23 +266,23 @@ export default function EarthquakeDashboard() {
                 )}
               </div>
             ) : (
-              <div className="text-center text-gray-500 py-8">
-                No earthquake data available
+              <div className="text-center text-gray-400 py-8">
+                {isConnected ? 'No earthquake data available' : 'Connect your wallet to view data'}
               </div>
             )}
           </div>
 
           {/* Request New Data */}
-          <div className="bg-white rounded-xl shadow-lg p-6">
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">Request New Data</h2>
-            <p className="text-gray-600 mb-6">
+          <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl shadow-lg p-6">
+            <h2 className="text-xl font-semibold text-white mb-4">Request New Data</h2>
+            <p className="text-gray-300 mb-6">
               Trigger a new data request to fetch the latest earthquake information from the USGS API.
             </p>
 
             <button
               onClick={requestNewData}
-              disabled={requesting || loading}
-              className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+              disabled={requesting || loading || !isConnected}
+              className="w-full bg-[#6100FF] text-white py-3 px-4 rounded-lg hover:bg-[#7E2FFF] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center transition-colors"
             >
               {requesting ? (
                 <>
@@ -285,47 +292,48 @@ export default function EarthquakeDashboard() {
               ) : (
                 <>
                   <Zap className="h-4 w-4 mr-2" />
-                  Request New Earthquake Data
+                  {isConnected ? 'Request New Earthquake Data' : 'Connect Wallet to Request Data'}
                 </>
               )}
             </button>
 
-            <div className="mt-4 p-4 bg-blue-50 rounded-lg">
-              <h3 className="font-medium text-blue-900 mb-2">How it works:</h3>
-              <ol className="text-sm text-blue-800 space-y-1">
-                <li>1. Click the button above to request new data</li>
-                <li>2. Your request is sent to the SEDA Network</li>
-                <li>3. Oracle nodes fetch data from USGS API</li>
-                <li>4. Consensus is reached and data is stored on-chain</li>
-                <li>5. Refresh to see the latest earthquake data</li>
+            <div className="mt-4 p-4 bg-[#6100FF]/10 rounded-lg border border-[#6100FF]/20">
+              <h3 className="font-medium text-[#6100FF] mb-2">How it works:</h3>
+              <ol className="text-sm text-gray-300 space-y-1">
+                <li>1. Connect your wallet using the button above</li>
+                <li>2. Click the button to request new data</li>
+                <li>3. Your request is sent to the SEDA Network</li>
+                <li>4. Oracle nodes fetch data from USGS API</li>
+                <li>5. Consensus is reached and data is stored on-chain</li>
+                <li>6. Refresh to see the latest earthquake data</li>
               </ol>
             </div>
           </div>
         </div>
 
         {/* Contract Info */}
-        <div className="mt-8 bg-white rounded-xl shadow-lg p-6">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">Contract Information</h2>
+        <div className="mt-8 bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl shadow-lg p-6">
+          <h2 className="text-xl font-semibold text-white mb-4">Contract Information</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
             <div>
-              <span className="text-gray-600">Contract Address:</span>
-              <div className="font-mono text-gray-900 break-all">
+              <span className="text-gray-300">Contract Address:</span>
+              <div className="font-mono text-white break-all">
                 {process.env.NEXT_PUBLIC_CONTRACT_ADDRESS}
               </div>
             </div>
             <div>
-              <span className="text-gray-600">Oracle Program ID:</span>
-              <div className="font-mono text-gray-900 break-all">
+              <span className="text-gray-300">Oracle Program ID:</span>
+              <div className="font-mono text-white break-all">
                 {process.env.NEXT_PUBLIC_ORACLE_PROGRAM_ID}
               </div>
             </div>
             <div>
-              <span className="text-gray-600">Network:</span>
-              <div className="text-gray-900">Base Sepolia Testnet</div>
+              <span className="text-gray-300">Network:</span>
+              <div className="text-white">Base Sepolia Testnet</div>
             </div>
             <div>
-              <span className="text-gray-600">Data Source:</span>
-              <div className="text-gray-900">USGS Earthquake API</div>
+              <span className="text-gray-300">Data Source:</span>
+              <div className="text-white">USGS Earthquake API</div>
             </div>
           </div>
         </div>
