@@ -1,7 +1,7 @@
+use crate::execution_phase::EarthquakeInfo;
 use anyhow::Result;
 use seda_sdk_rs::{elog, get_reveals, log, Process};
 use serde_json;
-use crate::execution_phase::EarthquakeInfo;
 
 /**
  * Executes the tally phase within the SEDA network.
@@ -18,9 +18,14 @@ pub fn tally_phase() -> Result<()> {
     for reveal in reveals {
         match serde_json::from_slice::<EarthquakeInfo>(&reveal.body.reveal) {
             Ok(eq) => {
-                log!("Received earthquake: magnitude={}, location={}, time={}", eq.magnitude, eq.location, eq.time);
+                log!(
+                    "Received earthquake: magnitude={}, location={}, time={}",
+                    eq.magnitude,
+                    eq.location,
+                    eq.time
+                );
                 eqs.push(eq);
-            },
+            }
             Err(_err) => {
                 elog!("Reveal body could not be parsed as EarthquakeInfo");
                 continue;
@@ -35,7 +40,11 @@ pub fn tally_phase() -> Result<()> {
     }
 
     // Sort by magnitude and pick the median entry
-    eqs.sort_by(|a, b| a.magnitude.partial_cmp(&b.magnitude).unwrap_or(std::cmp::Ordering::Equal));
+    eqs.sort_by(|a, b| {
+        a.magnitude
+            .partial_cmp(&b.magnitude)
+            .unwrap_or(std::cmp::Ordering::Equal)
+    });
     let middle = eqs.len() / 2;
     let median_eq = if eqs.len() % 2 == 0 {
         // For even, pick the lower median
@@ -46,7 +55,10 @@ pub fn tally_phase() -> Result<()> {
 
     // Report the successful result in the tally phase, encoding the result as bytes (JSON)
     let result_bytes = serde_json::to_vec(median_eq)?;
-    log!("Reporting median earthquake info as bytes: {} bytes", result_bytes.len());
+    log!(
+        "Reporting median earthquake info as bytes: {} bytes",
+        result_bytes.len()
+    );
     Process::success(&result_bytes);
     Ok(())
 }

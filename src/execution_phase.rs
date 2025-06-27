@@ -49,14 +49,29 @@ pub fn execution_phase() -> Result<()> {
     }
 
     let geojson: GeoJsonResponse = serde_json::from_slice(&response.bytes)?;
-    let feature = geojson.features.get(0).ok_or_else(|| anyhow::anyhow!("No earthquake data found"))?;
+    let feature = geojson
+        .features
+        .get(0)
+        .ok_or_else(|| anyhow::anyhow!("No earthquake data found"))?;
     let props = &feature.properties;
 
-    let magnitude = props.mag.ok_or_else(|| anyhow::anyhow!("No magnitude in data"))?;
-    let location = props.place.clone().unwrap_or_else(|| "Unknown location".to_string());
-    let time = props.time.ok_or_else(|| anyhow::anyhow!("No time in data"))?;
+    let magnitude = props
+        .mag
+        .ok_or_else(|| anyhow::anyhow!("No magnitude in data"))?;
+    let location = props
+        .place
+        .clone()
+        .unwrap_or_else(|| "Unknown location".to_string());
+    let time = props
+        .time
+        .ok_or_else(|| anyhow::anyhow!("No time in data"))?;
 
-    log!("Fetched earthquake: magnitude={}, location={}, time={}", magnitude, location, time);
+    log!(
+        "Fetched earthquake: magnitude={}, location={}, time={}",
+        magnitude,
+        location,
+        time
+    );
 
     let eq_info = EarthquakeInfo {
         magnitude,
@@ -66,7 +81,10 @@ pub fn execution_phase() -> Result<()> {
 
     // Serialize the struct to bytes (as JSON for simplicity)
     let result_bytes = serde_json::to_vec(&eq_info)?;
-    log!("Reporting earthquake info as bytes: {} bytes", result_bytes.len());
+    log!(
+        "Reporting earthquake info as bytes: {} bytes",
+        result_bytes.len()
+    );
     Process::success(&result_bytes);
     Ok(())
 }

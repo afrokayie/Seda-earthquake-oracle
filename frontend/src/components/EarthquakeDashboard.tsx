@@ -137,7 +137,7 @@ export default function EarthquakeDashboard() {
       setEarthquakeData(null);
       setError('Please connect your wallet to view earthquake data.');
     }
-  }, [isConnected]);
+  }, [isConnected, fetchEarthquakeData]);
 
   useEffect(() => {
     if (earthquakeData?.time) {
