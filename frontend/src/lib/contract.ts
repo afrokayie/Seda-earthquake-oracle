@@ -123,5 +123,6 @@ export function parseEarthquakeData(data: string): EarthquakeData | null {
 }
 
 export function getContractInstance(provider: ethers.Provider) {
+  console.log("Instantiating contract with address:", CONTRACT_ADDRESS);
   return new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, provider);
 } 

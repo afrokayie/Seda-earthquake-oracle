@@ -55,6 +55,7 @@ export default function EarthquakeDashboard() {
       // Convert wagmi public client to ethers provider
       const provider = new ethers.BrowserProvider(publicClient.transport);
       const contract = getContractInstance(provider);
+      console.log("Contract address in dashboard (fetch):", contract.target);
       
       const result = await contract.latestAnswer();
       
@@ -96,6 +97,7 @@ export default function EarthquakeDashboard() {
       const provider = new ethers.BrowserProvider(walletClient.transport);
       const signer = await provider.getSigner();
       const contract = getContractInstance(provider);
+      console.log("Contract address in dashboard (request):", contract.target);
       const contractWithSigner = contract.connect(signer) as ethers.Contract & {
         transmit: (requestFee: bigint, resultFee: bigint, batchFee: bigint, overrides?: { value: bigint }) => Promise<ethers.ContractTransactionResponse>;
       };
