@@ -7,6 +7,7 @@ export function ConnectWallet() {
   return (
     <ConnectKitButton.Custom>
       {({ isConnecting, show, address, isConnected }) => {
+        console.log('ConnectWallet Rendered:', { address, isConnected, isConnecting });
         return (
           <button
             onClick={show}
