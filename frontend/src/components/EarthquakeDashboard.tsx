@@ -8,16 +8,6 @@ import { clsx } from 'clsx';
 import { useAccount, usePublicClient, useWalletClient } from 'wagmi';
 import { ConnectWallet } from './ConnectWallet';
 
-// ENS resolution debugging override
-if (typeof window !== "undefined") {
-  const originalGetEnsAddress = ethers.providers.JsonRpcProvider.prototype.getEnsAddress;
-  ethers.providers.JsonRpcProvider.prototype.getEnsAddress = function (...args) {
-    console.error("ENS resolution attempted:", args);
-    console.trace("Call stack:");
-    throw new Error("ENS not supported on this network");
-  };
-}
-
 // Helper to filter out Chainlink probe errors
 function isChainlinkProbeError(err: unknown): boolean {
   if (err && typeof err === 'object') {
